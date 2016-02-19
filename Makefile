@@ -7,6 +7,10 @@ all: assembler
 
 check: test-assembler
 
+abc:
+	$(CC) $(CFLAGS) -o mytest src/translate_utils.c mytest.c
+	./mytest
+
 assembler: clean
 	$(CC) $(CFLAGS) -o assembler assembler.c $(ASSEMBLER_FILES)
 
