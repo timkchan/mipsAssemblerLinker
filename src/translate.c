@@ -46,16 +46,16 @@ unsigned write_pass_one(FILE* output, const char* name, char** args, int num_arg
     if (strcmp(name, "li") == 0) {
         if (num_args != 2) return 0;
         int flag;
-        int num;
+        long num;
         int line = 0;
         flag = translate_num (&num, args[1], INT32_MIN, UINT32_MAX);
         if (flag == -1) return 0;
 
         if ((num >> 16) > 0 ) {
-            fprintf(output, "%s %s %s %d %c", "lui ", args[0], ", ", num >> 16, '\n');
+            fprintf(output, "%s %s %s %ld %c", "lui ", args[0], ", ", num >> 16, '\n');
             line++;
         }
-        fprintf(output, "%s %s %s %s %d %c", "ori ", args[0], ", ", args[0], num << 16, '\n');
+        fprintf(output, "%s %s %s %s %ld %c", "ori ", args[0], ", ", args[0], num << 16, '\n');
             line++; 
         return line;  
     } else if (strcmp(name, "mul") == 0) {
@@ -148,17 +148,17 @@ int write_rtype(uint8_t funct, FILE* output, char** args, size_t num_args) {
 
     if (funct == 0x10 || funct == 0x12) {
       if (num_args != 1) return -1;
-      int rd = translate_reg(args[0]);
+      rd = translate_reg(args[0]);
 
     } else if (funct == 0x18 || funct == 0x1a) {
       if (num_args != 2) return -1;
-      int rs = translate_reg(args[0]);
-      int rt = translate_reg(args[1]);
+      rs = translate_reg(args[0]);
+      rt = translate_reg(args[1]);
 
     } else {
-      int rd = translate_reg(args[0]);
-      int rs = translate_reg(args[1]);
-      int rt = translate_reg(args[2]);
+      rd = translate_reg(args[0]);
+      rs = translate_reg(args[1]);
+      rt = translate_reg(args[2]);
     }
 
     if (rd == -1 || rs == -1 || rt == -1) return -1;
