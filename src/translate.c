@@ -88,8 +88,28 @@ int translate_inst(FILE* output, const char* name, char** args, size_t num_args,
     else if (strcmp(name, "or") == 0)    return write_rtype (0x25, output, args, num_args);
     else if (strcmp(name, "slt") == 0)   return write_rtype (0x2a, output, args, num_args);
     else if (strcmp(name, "sltu") == 0)  return write_rtype (0x2b, output, args, num_args);
+    else if (strcmp(name, "mult") == 0)  return write_rtype (0x18, output, args, num_args);
+    else if (strcmp(name, "div") == 0)   return write_rtype (0x1a, output, args, num_args);
+    else if (strcmp(name, "mfhi") == 0)  return write_rtype (0x10, output, args, num_args);
+    else if (strcmp(name, "mflo") == 0)  return write_rtype (0x12, output, args, num_args);
+
     else if (strcmp(name, "sll") == 0)   return write_shift (0x00, output, args, num_args);
-    /* YOUR CODE HERE */
+    else if (strcmp(name, "jr") == 0)    return write_jr (0x08, output, args, num_args);
+    else if (strcmp(name, "addiu") == 0) return write_addiu (0x09, output, args, num_args);
+    else if (strcmp(name, "ori") == 0)   return write_ori (0x0d, output, args, num_args);
+    else if (strcmp(name, "lui") == 0)   return write_lui (0x0f, output, args, num_args);
+
+    else if (strcmp(name, "lb") == 0)    return write_mem (0x20, output, args, num_args);
+    else if (strcmp(name, "lbu") == 0)   return write_mem (0x24, output, args, num_args);
+    else if (strcmp(name, "lw") == 0)    return write_mem (0x23, output, args, num_args);
+    else if (strcmp(name, "sb") == 0)    return write_mem (0x28, output, args, num_args);
+    else if (strcmp(name, "sw") == 0)    return write_mem (0x2b, output, args, num_args);
+
+    else if (strcmp(name, "beq") == 0)   return write_branch (0x04, output, args, num_args, addr, symtbl);
+    else if (strcmp(name, "bne") == 0)   return write_branch (0x05, output, args, num_args, addr, symtbl);
+
+    else if (strcmp(name, "j") == 0)     return write_jump (0x02, output, args, num_args, addr, reltbl);
+    else if (strcmp(name, "jal") == 0)   return write_jump (0x03, output, args, num_args, addr, reltbl);
     else                                 return -1;
 }
 
@@ -101,13 +121,39 @@ int translate_inst(FILE* output, const char* name, char** args, size_t num_args,
    find bitwise operations to be the cleanest way to complete this function.
  */
 int write_rtype(uint8_t funct, FILE* output, char** args, size_t num_args) {
-    // Perhaps perform some error checking?
 
-    int rd = translate_reg(args[0]);
-    int rs = translate_reg(args[1]);
-    int rt = translate_reg(args[2]);
+    if (num_args < 1 || num_args > 3) return -1;
+
+    int rs = 0;
+    int rt = 0;
+    int rd = 0;
+
+    if (funct == 0x10 || funct == 0x12) {
+      if (num_args != 1) return -1;
+      int rd = translate_reg(args[0]);
+
+    } else if (funct == 0x18 || funct == 0x1a) {
+      if (num_args != 2) return -1;
+      int rs = translate_reg(args[0]);
+      int rt = translate_reg(args[1]);
+
+    } else {
+      int rd = translate_reg(args[0]);
+      int rs = translate_reg(args[1]);
+      int rt = translate_reg(args[2]);
+    }
+
+    if (rd == -1 || rs == -1 || rt == -1) return -1;
 
     uint32_t instruction = 0;
+    instruction |= rs;
+    instruction << 5;
+    instruction |= rt;
+    instruction << 5;
+    instruction |= rd;
+    instruction << 11;
+    instruction |= funct;
+
     write_inst_hex(output, instruction);
     return 0;
 }
@@ -120,14 +166,24 @@ int write_rtype(uint8_t funct, FILE* output, char** args, size_t num_args) {
    find bitwise operations to be the cleanest way to complete this function.
  */
 int write_shift(uint8_t funct, FILE* output, char** args, size_t num_args) {
-	// Perhaps perform some error checking?
+	
+    if (num_args != 3) return -1;
 
     long int shamt;
     int rd = translate_reg(args[0]);
     int rt = translate_reg(args[1]);
     int err = translate_num(&shamt, args[2], 0, 31);
 
+    if (err == -1 || rd == -1 || rt == -1) return -1;
+
     uint32_t instruction = 0;
+    instruction |= rt;
+    instruction << 5;
+    instruction |= rd;
+    instruction << 5;
+    instruction |= shamt;
+    instruction << 6;
+    instruction |= funct;
     write_inst_hex(output, instruction);
     return 0;
 }
@@ -135,63 +191,105 @@ int write_shift(uint8_t funct, FILE* output, char** args, size_t num_args) {
 /* The rest of your write_*() functions below */
 
 int write_jr(uint8_t funct, FILE* output, char** args, size_t num_args) {
-    // Perhaps perform some error checking?
+    
+    if (num_args != 1) return -1;
 
     int rs = translate_reg(args[0]);
+    if (rs == -1) return -1;
 
     uint32_t instruction = 0;
+    instruction |= rs;
+    instruction << 21;
+    instruction |= funct;
     write_inst_hex(output, instruction);
     return 0;
 }
 
 int write_addiu(uint8_t opcode, FILE* output, char** args, size_t num_args) {
-    // Perhaps perform some error checking?
+    
+    if (num_args != 3) return -1;
     
     long int imm;
     int rt = translate_reg(args[0]);
     int rs = translate_reg(args[1]);
     int err = translate_num(&imm, args[2], INT16_MIN, INT16_MAX);
 
+    if (err == -1 || rs == -1 || rt == -1) return -1;
 
     uint32_t instruction = 0;
+    instruction |= opcode;
+    instruction << 5;
+    instruction |= rs;
+    instruction << 5;
+    instruction |= rt;
+    instruction << 16;
+    instruction |= imm;
     write_inst_hex(output, instruction);
     return 0;
 }
 
 int write_ori(uint8_t opcode, FILE* output, char** args, size_t num_args) {
-    // Perhaps perform some error checking?
+
+    if (num_args != 3) return -1;
     
     long int imm;
     int rt = translate_reg(args[0]);
     int rs = translate_reg(args[1]);
-    int err = translate_num(&imm, args[2], 0, UINT16_MAX);
+    int err = translate_num(&imm, args[2], INT16_MIN, INT16_MAX);
+
+    if (err == -1 || rs == -1 || rt == -1) return -1;
 
     uint32_t instruction = 0;
+    instruction |= opcode;
+    instruction << 5;
+    instruction |= rs;
+    instruction << 5;
+    instruction |= rt;
+    instruction << 16;
+    instruction |= imm;
     write_inst_hex(output, instruction);
     return 0;
 }
 
 int write_lui(uint8_t opcode, FILE* output, char** args, size_t num_args) {
-    // Perhaps perform some error checking?
+    
+    if (num_args != 2) return -1;
     
     long int imm;
     int rt = translate_reg(args[0]);
     int err = translate_num(&imm, args[1], 0, UINT16_MAX);
 
+    if (err == -1 || rt == -1) return -1;
+
     uint32_t instruction = 0;
+    instruction |= opcode;
+    instruction << 10;
+    instruction |= rt;
+    instruction << 16;
+    instruction |= imm;
     write_inst_hex(output, instruction);
     return 0;
 }
 
 int write_mem(uint8_t opcode, FILE* output, char** args, size_t num_args) {
-    // Perhaps perform some error checking?
+    
+    if (num_args != 2) return -1;
     
     long int imm;
     int rt = translate_reg(args[0]);
     int rs = translate_reg(args[2]);
     int err = translate_num(&imm, args[1], INT16_MIN, INT16_MAX);
 
+    if (err == -1 || rt == -1 || rs == -1) return -1;
+
     uint32_t instruction =0;
+    instruction |= opcode;
+    instruction << 5;
+    instruction |= rs;
+    instruction << 5;
+    instruction |= rt;
+    instruction << 16;
+    instruction |= imm;
     write_inst_hex(output, instruction);
     return 0;
 }
@@ -206,23 +304,42 @@ static int can_branch_to(uint32_t src_addr, uint32_t dest_addr) {
 
 
 int write_branch(uint8_t opcode, FILE* output, char** args, size_t num_args, uint32_t addr, SymbolTable* symtbl) {
-    // Perhaps perform some error checking?
+    
+    if (num_args != 3) return -1;
     
     int rs = translate_reg(args[0]);
     int rt = translate_reg(args[1]);
     int label_addr = get_addr_for_symbol(symtbl, args[2]);
 
+    // maybe need not to check if label_addr is -1 since there might be future reference.
+    if (label_addr == -1 || rt == -1 || rs == -1 || !can_branch_to(addr, label_addr)) return -1;
+
+    int32_t difference = label_addr - addr;
+    if (difference % 4 != 0) return -1;
+
     //Please compute the branch offset using the MIPS rules.
-    int32_t offset = 0;
+    int32_t offset = difference/4 - 1;
     uint32_t instruction = 0;
+    instruction |= opcode;
+    instruction << 5;
+    instruction |= rs;
+    instruction << 5;
+    instruction |= rt;
+    instruction << 16;
+    instruction |= offset;
     write_inst_hex(output, instruction);        
     return 0;
 }
 
 int write_jump(uint8_t opcode, FILE* output, char** args, size_t num_args, uint32_t addr, SymbolTable* reltbl) {
-    /* YOUR CODE HERE */
     
+    if (num_args != 1) return -1;
+
+    add_to_table(reltbl, args[0], addr);
+
     uint32_t instruction = 0;
+    instruction |= opcode;
+    instruction << 26;
     write_inst_hex(output, instruction);
     return 0;
 }
