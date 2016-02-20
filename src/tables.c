@@ -60,7 +60,11 @@ SymbolTable* create_table(int mode) {
 
 /* Frees the given SymbolTable and all associated memory. */
 void free_table(SymbolTable* table) {
-    /* YOUR CODE HERE */
+    for (int i = 0; i < table->len; i++) {
+        free((table->tbl)[i].name);
+    }
+    free(table->tbl);
+    free(table);
 }
 
 /* A suggested helper function for copying the contents of a string. */
@@ -89,8 +93,48 @@ static char* create_copy_of_str(const char* str) {
    Otherwise, you should store the symbol name and address and return 0.
  */
 int add_to_table(SymbolTable* table, const char* name, uint32_t addr) {
-    /* YOUR CODE HERE */
+  
+  //Not aligned.
+  if (addr % 4 != 0) {
+    addr_alignment_incorrect();
     return -1;
+  }
+
+  //Duplicate name in unique mode.
+  if (table->mode == SYMTBL_UNIQUE_NAME && get_addr_for_symbol(table, name) != -1) {
+    name_already_exists(name);
+    return -1;
+  }
+
+  //If size of table is reaching the cap.
+  if (table->len == table->cap) {
+    Symbol* newSymPtr = (Symbol *) realloc(table->tbl, table->cap * sizeof(Symbol) * SCALING_FACTOR);
+    if (!newSymPtr) {
+      allocation_failed();
+      return -1;
+    }
+    table->cap *= SCALING_FACTOR;
+    table->tbl = newSymPtr;
+  }
+
+  //Insert new symbol
+  char* newName = create_copy_of_str(name);
+  (table->tbl)[table->len] = (Symbol) {newName, addr};
+  (table->len)++;
+
+  return 0;
+}
+
+/* Returns the size of the table.
+ */
+int table_size(SymbolTable* table) {
+  return table->len;
+}
+
+/* Returns the cap of the table.
+ */
+int table_cap(SymbolTable* table) {
+  return table->cap;
 }
 
 /* Returns the address (byte offset) of the given symbol. If a symbol with name

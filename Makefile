@@ -8,7 +8,7 @@ all: assembler
 check: test-assembler
 
 abc:
-	$(CC) $(CFLAGS) -o mytest src/translate_utils.c mytest.c
+	$(CC) $(CFLAGS) -o mytest src/translate_utils.c src/tables.c src/utils.c mytest.c
 	./mytest
 
 assembler: clean
