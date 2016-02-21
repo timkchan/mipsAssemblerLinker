@@ -85,5 +85,10 @@ int main(int argc, char **argv) {
 	//	./run-valgrind ./mytest
 	printf("PASSED: free_table.\n");
 
+//
+	long int output;
+	printf("%d\n", translate_num(&output, "35x", -100, 100));
+	printf("%ld\n", output);
+
 return 0;
 }
