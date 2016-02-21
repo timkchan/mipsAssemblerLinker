@@ -73,7 +73,6 @@ int translate_num(long int* output, const char* str, long int lower_bound,
    Returns the register number of STR or -1 if the register name is invalid.
  */
 int translate_reg(const char* str) {
-
     if (strcmp(str, "$zero") == 0)      return 0;
     else if (strcmp(str, "$0") == 0)    return 0;
 
