@@ -160,7 +160,7 @@ void test_table_2() {
 }
 
 void test_table_3() {
-    int retval, max = 5;
+    int retval;
 
     SymbolTable * uniqueTable = create_table(SYMTBL_UNIQUE_NAME);
     CU_ASSERT_PTR_NOT_NULL(uniqueTable);
@@ -197,7 +197,7 @@ void test_table_3() {
     CU_ASSERT_EQUAL(uniqueTable->len, 6);
     CU_ASSERT_EQUAL(uniqueTable->cap, 10);
 
-    free_table(tbl);
+    free_table(uniqueTable);
 
     char* arr[] = { "Error: name 'tim5' already exists in table.",
                     "Error: address is not a multiple of 4." };
