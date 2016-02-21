@@ -125,18 +125,6 @@ int add_to_table(SymbolTable* table, const char* name, uint32_t addr) {
   return 0;
 }
 
-/* Returns the size of the table.
- */
-int table_size(SymbolTable* table) {
-  return table->len;
-}
-
-/* Returns the cap of the table.
- */
-int table_cap(SymbolTable* table) {
-  return table->cap;
-}
-
 /* Returns the address (byte offset) of the given symbol. If a symbol with name
    NAME is not present in TABLE, return -1.
  */
