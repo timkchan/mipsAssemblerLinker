@@ -192,7 +192,7 @@ void test_table_3() {
     CU_ASSERT_EQUAL(uniqueTable->cap, 5);
 
     //Table should be expanded.
-    retval = add_to_table(uniqueTable, tim6, 24);
+    retval = add_to_table(uniqueTable, "tim6", 24);
     CU_ASSERT_EQUAL(retval, 0)
     CU_ASSERT_EQUAL(uniqueTable->len, 6);
     CU_ASSERT_EQUAL(uniqueTable->cap, 10);
