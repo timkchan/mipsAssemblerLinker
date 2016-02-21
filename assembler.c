@@ -166,7 +166,12 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
         // Scan for arguments
         char* args[MAX_ARGS];
         int num_args = 0;
-        ret_code |= parse_args(input_line, args, &num_args);
+        int too_many_args_flag = 0;
+        too_many_args_flag = parse_args(input_line, args, &num_args);
+        if (too_many_args_flag == -1) {
+            ret_code = -1;
+            continue;
+        }
 
     	// Checks to see if there were any errors when writing instructions
         unsigned int lines_written = write_pass_one(output, token, args, num_args);
@@ -216,7 +221,12 @@ int pass_two(FILE *input, FILE* output, SymbolTable* symtbl, SymbolTable* reltbl
         /* Use translate_inst() to translate the instruction and write to output file.
            If an error occurs, the instruction will not be written and you should call
            raise_inst_error(). */
-        ret_code |= translate_inst(output, name, args, num_args, byte_offset, symtbl, reltbl);
+        int errorFlag = 0;
+        errorFlag = translate_inst(output, name, args, num_args, byte_offset, symtbl, reltbl);
+        if (errorFlag == -1) {
+            ret_code = -1;
+            raise_inst_error(input_line, name, args, num_args);
+        }
         byte_offset += 4;
     }
     /* Repeat until no more characters are left */

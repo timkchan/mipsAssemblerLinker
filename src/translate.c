@@ -47,17 +47,17 @@ unsigned write_pass_one(FILE* output, const char* name, char** args, int num_arg
         if (num_args != 2) return 0;
         int flag;
         long num;
-        unsigned line = 0;
         flag = translate_num (&num, args[1], INT32_MIN, UINT32_MAX);
         if (flag == -1) return 0;
 
         if ((num >> 16) > 0 ) {
-            fprintf(output, "%s %s %ld\n", "lui", "$at", num >> 16);
-            line++;
-        }
-        fprintf(output, "%s %s %s %ld\n", "ori", args[0], "$at", (num << 16) >> 16);
-            line++; 
-        return line;  
+            fprintf(output, "%s %s %ld\n", "lui", "$at", (num >> 16) & 0x0000ffff);
+            fprintf(output, "%s %s %s %ld\n", "ori", args[0], "$at", num & 0x0000ffff);
+            return 2;
+        } else {
+            fprintf(output, "%s %s %s %ld\n", "addiu", args[0], "$0", num);
+            return 1;
+        }  
     } else if (strcmp(name, "mul") == 0) {
         if (num_args != 3) return 0;
         fprintf(output, "%s %s %s\n", "mult", args[1], args[2]);
@@ -241,7 +241,7 @@ int write_addiu(uint8_t opcode, FILE* output, char** args, size_t num_args) {
     instruction <<= 5;
     instruction |= rt;
     instruction <<= 16;
-    instruction |= imm;
+    instruction |= (imm & 0x0000ffff);
     write_inst_hex(output, instruction);
     return 0;
 }
@@ -264,7 +264,7 @@ int write_ori(uint8_t opcode, FILE* output, char** args, size_t num_args) {
     instruction <<= 5;
     instruction |= rt;
     instruction <<= 16;
-    instruction |= imm;
+    instruction |= (imm & 0x0000ffff);
     write_inst_hex(output, instruction);
     return 0;
 }
@@ -284,14 +284,14 @@ int write_lui(uint8_t opcode, FILE* output, char** args, size_t num_args) {
     instruction <<= 10;
     instruction |= rt;
     instruction <<= 16;
-    instruction |= imm;
+    instruction |= (imm & 0x0000ffff);
     write_inst_hex(output, instruction);
     return 0;
 }
 
 int write_mem(uint8_t opcode, FILE* output, char** args, size_t num_args) {
     
-    if (num_args != 2) return -1;
+    if (num_args != 3) return -1;
     
     long int imm;
     int rt = translate_reg(args[0]);
@@ -307,7 +307,7 @@ int write_mem(uint8_t opcode, FILE* output, char** args, size_t num_args) {
     instruction <<= 5;
     instruction |= rt;
     instruction <<= 16;
-    instruction |= imm;
+    instruction |= (imm & 0x0000ffff);
     write_inst_hex(output, instruction);
     return 0;
 }
@@ -343,7 +343,7 @@ int write_branch(uint8_t opcode, FILE* output, char** args, size_t num_args, uin
     instruction <<= 5;
     instruction |= rt;
     instruction <<= 16;
-    instruction |= offset;
+    instruction |= (offset & 0x0000ffff);
     write_inst_hex(output, instruction);        
     return 0;
 }
