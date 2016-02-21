@@ -137,7 +137,7 @@ static int parse_args(uint32_t input_line, char** args, int* num_args) {
    it should return 0.
  */
 int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
-    /* YOUR CODE HERE */
+
     char buf[BUF_SIZE];
     uint32_t input_line = 0, byte_offset = 0;
     int ret_code = 0;
@@ -152,10 +152,23 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
 
         // Scan for the instruction name
     	char* token = strtok(buf, IGNORE_CHARS);
+        if (token == NULL) continue;
+
 
         // Scan for arguments
         char* args[MAX_ARGS];
         int num_args = 0;
+        ret_code |= parse_args(input_line, args, &num_args);
+
+        if (add_if_label(input_line, token, byte_offset, symtbl) == -1){
+            ret_code = -1;
+        }
+
+        if (num_args != 0) {
+            token = args[0];
+            *args = *args + 1;
+            num_args -= 1;
+        } else continue;
 
     	// Checks to see if there were any errors when writing instructions
         unsigned int lines_written = write_pass_one(output, token, args, num_args);
@@ -165,7 +178,7 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
         } 
         byte_offset += lines_written * 4;
     }       
-    return -1;
+    return ret_code;
 }
 
 /* Reads an intermediate file and translates it into machine code. You may assume:

@@ -47,30 +47,30 @@ unsigned write_pass_one(FILE* output, const char* name, char** args, int num_arg
         if (num_args != 2) return 0;
         int flag;
         long num;
-        int line = 0;
+        unsigned line = 0;
         flag = translate_num (&num, args[1], INT32_MIN, UINT32_MAX);
         if (flag == -1) return 0;
 
         if ((num >> 16) > 0 ) {
-            fprintf(output, "%s %s %s %ld %c", "lui ", args[0], ", ", num >> 16, '\n');
+            fprintf(output, "%s %s %s %ld %c", "lui ", args[0], " ", num >> 16, '\n');
             line++;
         }
-        fprintf(output, "%s %s %s %s %ld %c", "ori ", args[0], ", ", args[0], num << 16, '\n');
+        fprintf(output, "%s %s %s %s %ld %c", "ori ", args[0], " ", args[0], num << 16, '\n');
             line++; 
         return line;  
     } else if (strcmp(name, "mul") == 0) {
         if (num_args != 3) return 0;
-        fprintf(output, "%s %s %s %s %c", "mult ", args[1], ", ", args[2], '\n');
+        fprintf(output, "%s %s %s %s %c", "mult ", args[1], " ", args[2], '\n');
         fprintf(output, "%s %s %c", "mflo ", args[0], '\n');
         return 2;  
     } else if (strcmp(name, "quo") == 0) {
         if (num_args != 3) return 0;
-        fprintf(output, "%s %s %s %s %c", "div ", args[1], ", ", args[2], '\n');
+        fprintf(output, "%s %s %s %s %c", "div ", args[1], " ", args[2], '\n');
         fprintf(output, "%s %s %c", "mflo ", args[0], '\n');
         return 2;    
     } else if (strcmp(name, "rem") == 0) {
         if (num_args != 3) return 0;
-        fprintf(output, "%s %s %s %s %c", "div ", args[1], ", ", args[2], '\n');
+        fprintf(output, "%s %s %s %s %c", "div ", args[1], " ", args[2], '\n');
         fprintf(output, "%s %s %c", "mfhi ", args[0], '\n');
         return 2; 
     }
