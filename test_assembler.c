@@ -89,7 +89,6 @@ void test_translate_num() {
     CU_ASSERT_EQUAL(output, 7340031);   //Since last call failed, output should not get overwritten.
     CU_ASSERT_EQUAL(translate_num(NULL, "72", 72, 150), -1); //Invalid output pointer.
     CU_ASSERT_EQUAL(output, 7340031);
-
 }
 
 /****************************************
@@ -160,6 +159,51 @@ void test_table_2() {
     free_table(tbl);
 }
 
+void test_table_3() {
+    int retval, max = 5;
+
+    SymbolTable * uniqueTable = create_table(SYMTBL_UNIQUE_NAME);
+    CU_ASSERT_PTR_NOT_NULL(uniqueTable);
+
+    //Normal cases.
+    retval = add_to_table(uniqueTable, "tim1", 4);
+    CU_ASSERT_EQUAL(retval, 0)
+    retval = add_to_table(uniqueTable, "tim2", 8);
+    CU_ASSERT_EQUAL(retval, 0)
+    retval = add_to_table(uniqueTable, "tim3", 12);
+    CU_ASSERT_EQUAL(retval, 0)
+    retval = add_to_table(uniqueTable, "tim4", 16);
+    CU_ASSERT_EQUAL(retval, 0)
+    retval = add_to_table(uniqueTable, "tim5", 20);
+    CU_ASSERT_EQUAL(retval, 0)
+    CU_ASSERT_EQUAL(uniqueTable->len, 5);
+    CU_ASSERT_EQUAL(uniqueTable->cap, 5);
+
+    //Name duplicate.
+    retval = add_to_table(uniqueTable, "tim5", 20);
+    CU_ASSERT_EQUAL(retval, -1)
+    CU_ASSERT_EQUAL(uniqueTable->len, 5);
+    CU_ASSERT_EQUAL(uniqueTable->cap, 5);
+
+    //Address not aligned.
+    retval = add_to_table(uniqueTable, "tim6", 1);
+    CU_ASSERT_EQUAL(retval, -1)
+    CU_ASSERT_EQUAL(uniqueTable->len, 5);
+    CU_ASSERT_EQUAL(uniqueTable->cap, 5);
+
+    //Table should be expanded.
+    retval = add_to_table(uniqueTable, tim6, 24);
+    CU_ASSERT_EQUAL(retval, 0)
+    CU_ASSERT_EQUAL(uniqueTable->len, 6);
+    CU_ASSERT_EQUAL(uniqueTable->cap, 10);
+
+    free_table(tbl);
+
+    char* arr[] = { "Error: name 'tim5' already exists in table.",
+                    "Error: address is not a multiple of 4." };
+    check_lines_equal(arr, 2);
+}
+
 /****************************************
  *  Add your test cases here
  ****************************************/
@@ -192,6 +236,9 @@ int main(int argc, char** argv) {
         goto exit;
     }
     if (!CU_add_test(pSuite2, "test_table_2", test_table_2)) {
+        goto exit;
+    }
+    if (!CU_add_test(pSuite2, "test_table_3", test_table_3)) {
         goto exit;
     }
 

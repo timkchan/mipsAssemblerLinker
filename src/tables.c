@@ -117,7 +117,7 @@ int add_to_table(SymbolTable* table, const char* name, uint32_t addr) {
     table->tbl = newSymPtr;
   }
 
-  //Insert new symbol
+  //Insert new symbol.
   char* newName = create_copy_of_str(name);
   (table->tbl)[table->len] = (Symbol) {newName, addr};
   (table->len)++;
