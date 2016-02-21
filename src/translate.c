@@ -52,26 +52,26 @@ unsigned write_pass_one(FILE* output, const char* name, char** args, int num_arg
         if (flag == -1) return 0;
 
         if ((num >> 16) > 0 ) {
-            fprintf(output, "%s %s %s %ld %c", "lui ", args[0], " ", num >> 16, '\n');
+            fprintf(output, "%s %s %ld\n", "lui", "$at", num >> 16);
             line++;
         }
-        fprintf(output, "%s %s %s %s %ld %c", "ori ", args[0], " ", args[0], num << 16, '\n');
+        fprintf(output, "%s %s %s %ld\n", "ori", args[0], "$at", (num << 16) >> 16);
             line++; 
         return line;  
     } else if (strcmp(name, "mul") == 0) {
         if (num_args != 3) return 0;
-        fprintf(output, "%s %s %s %s %c", "mult ", args[1], " ", args[2], '\n');
-        fprintf(output, "%s %s %c", "mflo ", args[0], '\n');
+        fprintf(output, "%s %s %s\n", "mult", args[1], args[2]);
+        fprintf(output, "%s %s\n", "mflo", args[0]);
         return 2;  
     } else if (strcmp(name, "quo") == 0) {
         if (num_args != 3) return 0;
-        fprintf(output, "%s %s %s %s %c", "div ", args[1], " ", args[2], '\n');
-        fprintf(output, "%s %s %c", "mflo ", args[0], '\n');
+        fprintf(output, "%s %s %s %s\n", "div", args[1], " ", args[2]);
+        fprintf(output, "%s %s\n", "mflo", args[0]);
         return 2;    
     } else if (strcmp(name, "rem") == 0) {
         if (num_args != 3) return 0;
-        fprintf(output, "%s %s %s %s %c", "div ", args[1], " ", args[2], '\n');
-        fprintf(output, "%s %s %c", "mfhi ", args[0], '\n');
+        fprintf(output, "%s %s %s %s\n", "div", args[1], " ", args[2]);
+        fprintf(output, "%s %s\n", "mfhi", args[0]);
         return 2; 
     }
     write_inst_string(output, name, args, num_args);

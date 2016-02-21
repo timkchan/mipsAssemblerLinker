@@ -154,21 +154,19 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
     	char* token = strtok(buf, IGNORE_CHARS);
         if (token == NULL) continue;
 
+        int isLabel = add_if_label(input_line, token, byte_offset, symtbl);
+        if (isLabel != 0) { //isLabel
+            if (isLabel == -1) ret_code = -1;
+            token = strtok(NULL, IGNORE_CHARS);
+            if (token == NULL) {
+                continue;   
+            }
+        }
 
         // Scan for arguments
         char* args[MAX_ARGS];
         int num_args = 0;
         ret_code |= parse_args(input_line, args, &num_args);
-
-        if (add_if_label(input_line, token, byte_offset, symtbl) == -1){
-            ret_code = -1;
-        }
-
-        if (num_args != 0) {
-            token = args[0];
-            *args = *args + 1;
-            num_args -= 1;
-        } else continue;
 
     	// Checks to see if there were any errors when writing instructions
         unsigned int lines_written = write_pass_one(output, token, args, num_args);
