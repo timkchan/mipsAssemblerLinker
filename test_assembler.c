@@ -160,7 +160,7 @@ void test_table_2() {
 }
 
 void test_table_3() {
-    init_log_file()
+    init_log_file();
     int retval;
 
     SymbolTable * uniqueTable = create_table(SYMTBL_UNIQUE_NAME);
