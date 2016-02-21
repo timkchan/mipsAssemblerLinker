@@ -83,6 +83,13 @@ void test_translate_num() {
     CU_ASSERT_EQUAL(output, 72);
     CU_ASSERT_EQUAL(translate_num(&output, "72", 73, 150), -1);
     CU_ASSERT_EQUAL(translate_num(&output, "35x", -100, 100), -1);
+    CU_ASSERT_EQUAL(translate_num(&output, "0x6fffff", 0, 999999999), 0);   //Nornal case.
+    CU_ASSERT_EQUAL(output, 7340031);
+    CU_ASSERT_EQUAL(translate_num(&output, "0x6fffff", 1, 2), -1);  //Out of bound.
+    CU_ASSERT_EQUAL(output, 7340031);   //Since last call failed, output should not get overwritten.
+    CU_ASSERT_EQUAL(translate_num(NULL, "72", 72, 150), 0); //Invalid output pointer.
+    CU_ASSERT_EQUAL(output, 72);
+
 }
 
 /****************************************
