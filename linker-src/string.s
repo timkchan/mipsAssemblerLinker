@@ -28,13 +28,13 @@ tab:		.asciiz "\t"
 #------------------------------------------------------------------------------
 strlen:
 	addiu $t0, $0, 0		#Initial Char Count 0.
-loop:
+strlenLoop:
 	lb $t1, 0($a0)			#load current char.
-	beqz $t1, end 			#compare if current char is '\0'.
+	beqz $t1, strlenEnd		#compare if current char is '\0'.
 	addiu $t0, $t0, 1		#add one to count.
 	addiu $a0, $a0, 1		#point to the next char.
-	j loop
-end:
+	j strlenLoop
+strlenEnd:
 	addiu $v0, $t0, 0
 	jr $ra
 
@@ -49,7 +49,18 @@ end:
 # Returns: the destination array
 #------------------------------------------------------------------------------
 strncpy:
-	# YOUR CODE HERE
+	addiu $v0, $a0, 0		#return the copied string.
+strncpyLoop:
+	beqz $a2, strncpyEnd	#end if n == 0.
+	lb $t1, 0($a1) 			#load the char to be copied.
+	beqz $t1 strncpyEnd 	#Nothing to be copied.
+	sb $t1, 0($a0)			#store the loaded char to dest.
+	addiu $a1, $a1, 1 		#next char to be read.
+	addiu $a0, $a0, 1		#next location to be written.
+	addiu $a2, $a2, -1		#n--.
+	j strncpyLoop
+strncpyEnd:
+	sb $0, 0($a0)			#null terminate the string.
 	jr $ra
 
 #------------------------------------------------------------------------------
