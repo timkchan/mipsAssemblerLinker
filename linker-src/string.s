@@ -76,7 +76,24 @@ strncpyEnd:
 # Returns: pointer to the copy of the string
 #------------------------------------------------------------------------------
 copy_of_str:
-	# YOUR CODE HERE
+	addiu $sp, $sp, -12	#0: original string, 4: len, 8: $ra.
+	sw $ra, 8($sp)		#storing the return address.
+	sw $a0, 0($sp)		#storing original string address.
+
+	jal strlen
+	sw $v0, 4($sp) 		#storing the len of string.
+
+	addiu $a0, $v0, 1	#len of string +1 (null) as argument for syscall.
+	li $v0, 9
+	syscall				#return address at v0.
+
+	move $a0, $v0			#arg0 for destination.
+	lw $a1, 0($sp)		#arg1 for source.
+	lw $a2, 4($sp)		#arg2 for char to copy.
+	jal strncpy 		#return address at v0 already.
+
+	lw $ra, 8($sp)
+	addiu $sp, $sp, 12
 	jr $ra
 
 ###############################################################################
