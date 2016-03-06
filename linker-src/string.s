@@ -15,7 +15,7 @@
 
 .data
 newline:	.asciiz "\n"
-tab:	.asciiz "\t"
+tab:		.asciiz "\t"
 
 .text
 #------------------------------------------------------------------------------
@@ -27,7 +27,15 @@ tab:	.asciiz "\t"
 # Returns: the length of the string
 #------------------------------------------------------------------------------
 strlen:
-	# YOUR CODE HERE
+	addiu $t0, $0, 0		#Initial Char Count 0.
+loop:
+	lb $t1, 0($a0)			#load current char.
+	beqz $t1, end 			#compare if current char is '\0'.
+	addiu $t0, $t0, 1		#add one to count.
+	addiu $a0, $a0, 1		#point to the next char.
+	j loop
+end:
+	addiu $v0, $t0, 0
 	jr $ra
 
 #------------------------------------------------------------------------------
