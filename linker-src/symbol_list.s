@@ -48,8 +48,35 @@
 # Returns:  address of symbol if found or -1 if not found
 #------------------------------------------------------------------------------
 addr_for_symbol:
-	# YOUR CODE HERE
+	addiu $sp, $sp, -8
+	sw $ra, 0($sp)					#0: ra.
+	sw $a1, 4($sp)					#4: name to look for.
+	move $t3, $a0					#4: pointer to list.
+
+searchLoop:
+	beq $t3, $0, address_not_found	# Begin symbol_for_addr.
+	
+	lw $a0, 4($t3)					#laod name in the node.
+	lw $a1, 4($sp)					#load name to look for.
+	jal streq						#Check if name equal, return at v0.
+
+	beq $v0, $0, address_found
+	lw $t3, 8($t3)
+	j searchLoop
+
+
+address_found:
+	lw $ra, 0($sp)
+	lw $v0, 0($t3)
+	addiu $sp, $sp, 8
 	jr $ra
+
+address_not_found:
+	lw $ra, 0($sp)
+	addiu $sp, $sp, 8
+	li $v0, -1
+	jr $ra
+
 	
 ###############################################################################
 #                 DO NOT MODIFY ANYTHING BELOW THIS POINT                       
