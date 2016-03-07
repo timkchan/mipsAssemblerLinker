@@ -64,7 +64,6 @@ searchLoop:
 	lw $t3, 8($t3)
 	j searchLoop
 
-
 address_found:
 	lw $ra, 0($sp)
 	lw $v0, 0($t3)

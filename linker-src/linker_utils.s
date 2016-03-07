@@ -46,7 +46,16 @@ relocLabel: .asciiz ".relocation"
 # Returns: 1 if the instruction needs relocation, 0 otherwise.
 #------------------------------------------------------------------------------
 inst_needs_relocation:
-	# YOUR CODE HERE
+	srl $t0, $a0, 26		#first 6bit: opcode.
+	li $t2, 2				#opcode for j.
+	li $t3, 3				#opcode for jal.
+	beq $t0, $t2, needRelocate
+	beq $t0, $t3, needRelocate
+	li $v0, 0
+	jr $ra
+
+needRelocate:
+	li $v0, 1
 	jr $ra
 	
 #------------------------------------------------------------------------------
@@ -68,8 +77,42 @@ inst_needs_relocation:
 # Returns: the relocated instruction, or -1 if error
 #------------------------------------------------------------------------------
 relocate_inst:
-	# YOUR CODE HERE
+	addiu $sp, $sp, -8
+	sw $a0, 0($sp)			#0: instruction
+	sw $ra, 4($sp)			#4: $ra
+
+	move $a0, $a3			#arg0 for symbol_for_addr.
+	jal symbol_for_addr		#look for symbol.
+
+	li $t0, -1
+	beq $v0, $t0, notFound	#check if not found.
+
+	move $a0, $a2
+	move $a1, $v0
+	jal addr_for_symbol		#look for address for symbol.
+
+	li $t0, -1
+	beq $v0, $t0, notFound	#check if not found.
+
+	sll $t1, $v0, 4			#truncate address(strip top 4 bit).
+	srl $t1, $t1, 6			#truncate address(strip bottom 2 bit).
+
+	lw $t0, 0($sp)
+	srl $t0, $t0, 26		#truncate instruction(strip bottom 26 bit).
+	sll $t0, $t0, 26
+
+	or $v0, $t0, $t1		#generate instruction.
+
+	lw $ra, 4($sp)
+	addiu $sp, $sp, 8
 	jr $ra
+
+notFound:
+	li $v0, -1
+	lw $ra, 4($sp)
+	addiu $sp, $sp, 8
+	jr $ra
+
 
 ###############################################################################
 #                 DO NOT MODIFY ANYTHING BELOW THIS POINT                       
