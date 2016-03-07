@@ -48,7 +48,8 @@ hex_buffer:		.space 10
 write_machine_code:
 	# You may need to save additional items onto the stack. Feel free to
 	# change this part.
-	addiu $sp, $sp, -24
+	addiu $sp, $sp, -28
+	sw $s5, 24($sp)
 	sw $s0, 20($sp)
 	sw $s1, 16($sp)
 	sw $s2, 12($sp)
@@ -77,10 +78,13 @@ write_machine_code_find_text:
 	# 1. Initialize the byte offset to zero. We will need this for any instructions
 	# that require relocation:
 	# YOUR_INSTRUCTIONS_HERE
+	li $s5, 0				# $s5 = offset.
 
 write_machine_code_next_inst:
 	# 2. Call readline() while passing in the correct arguments:
 	# YOUR_INSTRUCTIONS_HERE
+	move $a0, $s1
+	jal readline
 
 	# Check whether readline() returned an error.
 	blt $v0, $0, write_machine_code_error
@@ -93,21 +97,37 @@ write_machine_code_next_inst:
 	# 3. Looks like there is another instruction. Call parse_int() with base=16
 	# to convert the instruction into a number, and store it into a register:
 	# YOUR_INSTRUCTIONS_HERE
+	move $a0, $s4
+	li $a1, 16
+	jal parse_int
+	move $s4, $v0
+
 	
 	# 4. Check if the instruction needs relocation. If it does not, branch to
 	# the label write_machine_code_to_file:
 	# YOUR_INSTRUCTIONS_HERE
+	move $a0, $s4
+	jal inst_needs_relocation
+	beqz $v0, write_machine_code_to_file
 	
 	# 5. Here we handle relocation. Call relocate_inst() with the appropriate
 	# arguments, and store the relocated instruction in the appropriate register:
 	# YOUR_INSTRUCTIONS_HERE
+	move $a0, $s4
+	move $a1, $s5
+	move $a2, $s2
+	move $a3, $s3
 
 write_machine_code_to_file:
 	# 6. Write the instruction into a string buffer via hex_to_str():
-	# YOUR_INSTRUCTIONS_HERE 
+	# YOUR_INSTRUCTIONS_HERE
+	move $a0, $s4
+	move $a1, $s0
+	jal hex_to_str
 	
 	# 7. Increment the byte offset by the appropriate amount:
 	# YOUR_INSTRUCTIONS_HERE
+	addiu $s5, $s5, 4
 
 	# Here, we use the write to file syscall. WE specify the output file as $a0.
 	move $a0, $s0
@@ -126,6 +146,7 @@ write_machine_code_error:
 	li $v0, -1
 write_machine_code_end:
 	# Don't forget to change this part if you saved more items onto the stack!
+	lw $s5, 24($sp)
 	lw $s0, 20($sp)
 	lw $s1, 16($sp)
 	lw $s2, 12($sp)
