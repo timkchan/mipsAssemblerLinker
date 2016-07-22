@@ -1,1 +1,3 @@
-# proj2-1-starter
+# MIPS Assembler and Linker
+
+details will be added.
